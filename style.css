@@ -1,0 +1,342 @@
+/* ======================================= */
+/* 1. Variáveis de Tema (Light/Dark Mode) */
+/* ======================================= */
+
+/* Tema Escuro (Padrão) */
+:root, .dark {
+    --color-bg-primary: #121212; /* Fundo principal escuro */
+    --color-bg-secondary: #1e1e1e; /* Fundo dos painéis */
+    --color-bg-tertiary: #2a2a2a; /* Elementos interativos (hover) */
+    --color-text-primary: #f5f5f5; /* Texto principal claro */
+    --color-text-secondary: #b3b3b3; /* Texto secundário/Placeholder */
+    --color-accent: #8bc34a; /* Verde Zentry (Ações primárias) */
+    --color-accent-dark: #689f38; /* Verde mais escuro para hover */
+    --color-error: #ff5252; /* Vermelho para erros/parar */
+    --color-border: #333333; /* Linhas divisórias escuras */
+    --color-shadow: rgba(0, 0, 0, 0.4);
+}
+
+/* Tema Claro */
+.light {
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f0f0f0;
+    --color-bg-tertiary: #e0e0e0;
+    --color-text-primary: #1e1e1e;
+    --color-text-secondary: #666666;
+    --color-accent: #8bc34a;
+    --color-accent-dark: #689f38;
+    --color-error: #e53935;
+    --color-border: #cccccc;
+    --color-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* ======================================= */
+/* 2. Estilos Globais e Navbar */
+/* ======================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 2px 4px var(--color-shadow);
+}
+
+.logo { height: 40px; margin-right: 10px; }
+.app-name { font-size: 1.5em; font-weight: 700; color: var(--color-accent); }
+.nav-menu { list-style: none; display: flex; }
+.how-it-works { margin-left: 20px; color: var(--color-text-secondary); cursor: pointer; position: relative; padding: 5px 0; }
+.how-it-works:hover { color: var(--color-text-primary); }
+
+/* Switch de Tema */
+.theme-toggle input { opacity: 0; width: 0; height: 0; }
+.switch { position: relative; display: inline-block; width: 45px; height: 25px; border-radius: 34px; background-color: var(--color-border); cursor: pointer; }
+.switch:before { content: ''; position: absolute; height: 20px; width: 20px; left: 2px; bottom: 2.5px; background-color: var(--color-bg-primary); border-radius: 50%; transition: 0.4s; box-shadow: 0 1px 3px var(--color-shadow); }
+input:checked + .switch { background-color: var(--color-accent); }
+input:checked + .switch:before { transform: translateX(20px); }
+
+/* Botões e Inputs */
+button { cursor: pointer; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; background-color: var(--color-bg-tertiary); color: var(--color-text-primary); transition: background-color 0.2s; }
+button:hover { background-color: var(--color-border); }
+.btn-primary { background-color: var(--color-accent); color: #1e1e1e; }
+.btn-primary:hover { background-color: var(--color-accent-dark); }
+input[type="text"], input[type="number"], select { padding: 10px; border: 1px solid var(--color-border); border-radius: 8px; background-color: var(--color-bg-primary); color: var(--color-text-primary); font-size: 1em; }
+
+/* ======================================= */
+/* 3. Layout Principal (3 Colunas e Cards) */
+/* ======================================= */
+
+.zentry-container {
+    margin-top: 80px; 
+    padding: 30px; /* Aumentado padding */
+    display: grid;
+    gap: 30px; /* Aumentado o espaçamento */
+    grid-template-columns: 1fr 1fr 1fr; /* 3 Colunas no Desktop */
+    max-width: 1500px; /* Aumentada a largura máxima */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.panel {
+    background-color: var(--color-bg-secondary);
+    padding: 25px; /* Aumentado padding interno */
+    border-radius: 12px;
+    box-shadow: 0 6px 15px var(--color-shadow); /* Sombra mais visível */
+    min-height: 450px; /* Aumentado o min-height */
+}
+
+.panel h2 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: var(--color-text-primary);
+}
+
+
+/* ======================================= */
+/* 4. Painel de Tarefas (Z-Cards) */
+/* ======================================= */
+
+/* Alternador de Listas */
+.task-list-switch { display: flex; justify-content: center; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--color-border); overflow: hidden; }
+.task-list-switch input { display: none; }
+.task-list-switch label { flex: 1; text-align: center; padding: 8px 15px; cursor: pointer; font-size: 0.9em; background-color: var(--color-bg-secondary); color: var(--color-text-secondary); }
+.task-list-switch input:checked + label { background-color: var(--color-accent); color: #1e1e1e; font-weight: bold; }
+
+#task-input { display: flex; gap: 10px; margin-bottom: 20px; }
+#new-task-text { flex-grow: 1; }
+#task-list { list-style: none; padding: 0; }
+
+/* Master Task Container */
+.master-task {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.master-task:last-child { border-bottom: none; }
+
+.task-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.task-header .task-text { font-weight: 600; flex-grow: 1; }
+
+/* Botões de Ação dentro do Header (Minimizar, Add Subtarefa) */
+.minimize-button, .add-subtask-button {
+    font-size: 1em;
+    padding: 2px 7px;
+    margin-right: 8px;
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    transition: color 0.2s;
+}
+
+.minimize-button:hover { color: var(--color-text-primary); } 
+
+.add-subtask-button {
+    background-color: var(--color-accent);
+    color: var(--color-bg-primary);
+    border-radius: 50%;
+    line-height: 1;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+}
+.add-subtask-button:hover { background-color: var(--color-accent-dark); }
+
+
+.status-select { padding: 5px 8px; margin-left: 10px; margin-right: 5px; border-radius: 4px; font-size: 0.8em; }
+
+.task-item button { background: transparent; color: var(--color-text-secondary); padding: 5px; font-size: 0.9em; }
+.task-item button:hover { color: var(--color-error); }
+
+/* Estilos de Status (Aplicação no .master-task e .subtask-item) */
+.task-item.completed, .subtask-item.completed {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+/* Subtarefas */
+.subtask-list {
+    list-style: none;
+    width: 100%;
+    padding-left: 20px; 
+    border-left: 1px dashed var(--color-border);
+    margin-top: 5px;
+}
+
+.subtask-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 0.9em;
+    border-bottom: 1px dotted var(--color-border);
+}
+.subtask-item:last-child { border-bottom: none; }
+
+.subtask-text { flex-grow: 1; margin-right: 10px; }
+.subtask-item .status-select { font-size: 0.75em; margin-left: 0; }
+
+
+/* ======================================= */
+/* 5. Painel de Timer e Mídia */
+/* ======================================= */
+
+.panel-timer { display: flex; flex-direction: column; align-items: center; justify-content: space-around; text-align: center; }
+.timer-mode { font-size: 1.2em; font-weight: 500; margin-bottom: 15px; color: var(--color-accent); }
+#timer-display { font-size: 6.5em; font-weight: 700; margin: 20px 0; } /* Tamanho aumentado */
+
+.timer-controls { display: flex; gap: 15px; margin-bottom: 20px; }
+
+/* Botões do Pomodoro (Visual Aprimorado) */
+#start-button, #pause-button {
+    font-size: 1.1em;
+    padding: 12px 24px;
+    min-width: 120px;
+    border: 2px solid;
+    color: var(--color-bg-primary); /* Fundo escuro em contraste */
+    font-weight: 900;
+}
+
+#start-button {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+#pause-button {
+    background-color: var(--color-error); /* Cor de parada/pausa */
+    border-color: var(--color-error);
+}
+
+#reset-button {
+    background-color: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 12px 18px;
+}
+
+.session-tracker { font-size: 1em; color: var(--color-text-secondary); margin-bottom: 30px; }
+#config-button { background-color: transparent; border: 1px solid var(--color-border); }
+
+/* Painel Mídia */
+.panel-media { text-align: center; }
+.media-tip { font-size: 0.9em; color: var(--color-text-secondary); margin-top: 15px; }
+
+
+/* ======================================= */
+/* 6. Modais e Banners */
+/* ======================================= */
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+.modal-content { background-color: var(--color-bg-secondary); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 8px 16px var(--color-shadow); }
+.config-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; }
+
+/* Cookie Banner */
+#cookie-banner { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--color-bg-tertiary); color: var(--color-text-primary); padding: 15px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; border-top: 1px solid var(--color-border); }
+#cookie-banner p { flex-grow: 1; margin-right: 20px; font-size: 0.9em; }
+
+
+/* ======================================= */
+/* 7. Bottom Navbar (Mobile) */
+/* ======================================= */
+
+.bottom-navbar {
+    display: none; /* ESCONDIDO POR PADRÃO (EM DESKTOP) */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+    z-index: 1050; 
+    padding: 5px 0;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -2px 4px var(--color-shadow);
+}
+
+.nav-button {
+    flex-grow: 1; border: none !important; background: transparent !important; 
+    color: var(--color-text-secondary) !important; font-size: 0.8em; padding: 10px 5px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px; font-weight: 500;
+}
+
+.nav-button.active { color: var(--color-accent) !important; font-weight: 600; }
+
+
+/* ======================================= */
+/* 8. Responsividade (Media Queries) */
+/* ======================================= */
+
+/* Telas Médias (Tablets) */
+@media (max-width: 992px) {
+    .zentry-container { grid-template-columns: 1fr 1fr; }
+    .panel-tasks { grid-column: 1 / 2; }
+    .panel-timer { grid-column: 2 / 3; }
+    .panel-media { grid-column: 1 / 3; grid-row: 2 / 3; }
+    .nav-menu { display: none; }
+}
+
+/* Telas Pequenas (Mobile) */
+@media (max-width: 650px) {
+    /* Ativa a navegação inferior */
+    .bottom-navbar { display: flex; }
+    
+    .zentry-container {
+        grid-template-columns: 1fr; 
+        padding: 15px;
+        padding-bottom: 70px; /* Espaço para a Bottom Navbar */
+    }
+    
+    .how-it-works { display: none; }
+    #timer-display { font-size: 4em; }
+
+    /* Lógica de navegação mobile: Esconde todos os painéis por padrão */
+    .panel-tasks, .panel-timer, .panel-media { 
+        grid-column: 1 / 2; 
+        grid-row: auto;
+        display: none; 
+        width: 100%;
+    }
+
+    /* O JS exibe apenas o painel com esta classe */
+    .panel-tasks.active-mobile,
+    .panel-timer.active-mobile,
+    .panel-media.active-mobile {
+        display: block;
+    }
+
+    /* Ajuste no cookie banner para mobile */
+    #cookie-banner {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        padding-bottom: 75px; 
+    }
+    #cookie-banner button { width: 100%; }
+}

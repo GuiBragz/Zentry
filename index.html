@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zentry | Foco e Produtividade</title>
+    <link rel="stylesheet" href="style.css" />
+    
+    </head>
+<body class="dark">
+
+    <nav class="navbar" style="position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;">
+        <div class="nav-left">
+            <img src="/images/Zentry_-removebg-preview.png" class="logo" alt="Zentry Logo" /> 
+            <span class="app-name">Zentry</span> 
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item how-it-works">
+                Como funciona
+                <div class="tooltip">Zentry ajuda você a organizar tarefas, gerenciar seu tempo com Pomodoro e manter foco enquanto ouve Lofi.</div>
+            </li>
+        </ul>
+
+        <div class="nav-right">
+            <div class="theme-toggle">
+                <input type="checkbox" id="nav-theme-switch" checked /> 
+                <label for="nav-theme-switch" class="switch"></label>
+            </div>
+        </div>
+    </nav>
+
+    <main class="zentry-container" style="margin-top: 80px;">
+        
+        <section class="panel panel-tasks">
+            <div class="task-list-switch">
+                <input type="radio" name="list-type" value="tasks" id="switch-tasks" checked><label for="switch-tasks">Lista de Tarefas</label>
+                <input type="radio" name="list-type" value="exercises" id="switch-exercises"><label for="switch-exercises">Exercícios</label>
+            </div>
+
+            <h2 id="task-panel-title">Lista de Tarefas (Z-Cards)</h2>
+
+            <div id="task-input">
+                <input type="text" id="new-task-text" placeholder="Adicionar Tarefa | Subtarefa 1, Subtarefa 2..." />
+                <button onclick="addTask()">+</button>
+            </div>
+
+            <ul id="task-list"></ul>
+        </section>
+
+        <section class="panel panel-timer">
+            <div class="timer-mode">
+                <span id="timer-status">Foco</span>
+            </div>
+
+            <div id="timer-display">25:00</div> 
+
+            <div class="timer-controls">
+                <button id="start-button">Iniciar</button>
+                <button id="pause-button" style="display: none;">Pausar</button>
+                <button id="reset-button">Reiniciar</button>
+            </div>
+
+            <div class="session-tracker">
+                Sessão <span id="current-session">1</span> de <span id="total-sessions">4</span>
+            </div>
+
+            <button id="config-button">⚙️ Configurar</button>
+        </section>
+
+        <section class="panel panel-media">
+            <h2>Música para Concentrar</h2>
+            <div id="lofi-player">
+                <iframe
+                    width="100%"
+                    height="200"
+                    src="https://www.youtube.com/embed/jfKfPfyJRdk"
+                    title="Lofi Player"
+                    frameborder="0"
+                    allow="autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen>
+                </iframe>
+                <p class="media-tip">Ajuste o volume no player do YouTube.</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="config-modal-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>⚙️ Configurações do Pomodoro</h3>
+            
+            <div class="config-group">
+                <label for="focus-time-input">Tempo de Foco (minutos):</label>
+                <input type="number" id="focus-time-input" min="1" value="25">
+            </div>
+
+            <div class="config-group">
+                <label for="short-break-input">Pausa Curta (minutos):</label>
+                <input type="number" id="short-break-input" min="1" value="5">
+            </div>
+
+            <div class="config-group">
+                <label for="long-break-input">Pausa Longa (minutos):</label>
+                <input type="number" id="long-break-input" min="1" value="15">
+            </div>
+            
+            <div class="modal-buttons">
+                <button id="cancel-config-button">Cancelar</button>
+                <button id="save-config-button" class="btn-primary">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cookie-banner" style="display: none;">
+        <p>
+            Usamos cookies para armazenar sua lista de atividades, tema e configurações do Pomodoro. 
+            Isso garante que você encontre seus dados salvos na próxima visita, **sem a necessidade de login**. 
+            Ao continuar, você concorda com o uso de cookies.
+        </p>
+        <button id="cookie-accept-button" class="btn-primary">Entendi e Aceito</button>
+    </div>
+
+    <nav class="bottom-navbar">
+        <button id="nav-tasks" class="nav-button active" data-panel="panel-tasks">
+            📋 Tarefas
+        </button>
+        <button id="nav-timer" class="nav-button" data-panel="panel-timer">
+            ⏱️ Foco
+        </button>
+        <button id="nav-media" class="nav-button" data-panel="panel-media">
+            🎧 Mídia
+        </button>
+    </nav>
+
+    <script src="script.js"></script>
+</body>
+</html>
