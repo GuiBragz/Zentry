@@ -1,13 +1,13 @@
 // =======================================
-// 1. Variáveis Globais e Configurações Padrão
+// 1. Variáveis Globais e Configurações
 // =======================================
 
-// Nomes dos cookies para armazenamento
+// Chaves para Cookies
 const COOKIE_CONSENT = 'zentry_cookie_accepted';
 const CONFIG_COOKIE = 'zentry_pomodoro_config';
 const THEME_COOKIE = 'zentry_theme';
 
-// Configurações Padrão do Pomodoro (minutos)
+// Configurações Padrão do Pomodoro (Minutos)
 let config = {
     focusTime: 25,
     shortBreak: 5,
@@ -15,24 +15,27 @@ let config = {
     sessionsBeforeLongBreak: 4,
 };
 
-// Estado do Timer
+// Estado do Sistema
 let mode = 'focus'; // 'focus', 'shortBreak', 'longBreak'
-let timeLeft = config.focusTime * 60; // Tempo em segundos
+let timeLeft = config.focusTime * 60; 
 let isRunning = false;
 let timerInterval;
 let currentSession = 1;
 
-// Constantes de Status
+// Som do Alarme (Link direto para um beep simples)
+const alarmSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
+// Status das Tarefas
 const STATUS_OPEN = 'open';
 const STATUS_IN_PROGRESS = 'in-progress';
 const STATUS_COMPLETED = 'completed';
 
-// Estruturas de Dados (Listas)
-let tasks = [];     // Lista que permite subtarefas
-let exercises = []; // Lista simples (sem subtarefas)
-let activeList = 'tasks'; // Controla qual lista está sendo exibida ('tasks' ou 'exercises')
+// Dados (Listas)
+let tasks = [];
+let exercises = [];
+let activeList = 'tasks'; // Controla a aba ativa
 
-// --- Elementos do DOM (Interface) ---
+// --- Seleção de Elementos do DOM ---
 
 // Timer
 const timerDisplay = document.getElementById('timer-display');
@@ -50,7 +53,7 @@ const taskPanelTitle = document.getElementById('task-panel-title');
 const switchTasks = document.getElementById('switch-tasks');
 const switchExercises = document.getElementById('switch-exercises');
 
-// Configuração (Modal)
+// Configuração e Modais
 const configButton = document.getElementById('config-button');
 const configModalOverlay = document.getElementById('config-modal-overlay');
 const focusTimeInput = document.getElementById('focus-time-input');
@@ -59,19 +62,17 @@ const longBreakInput = document.getElementById('long-break-input');
 const saveConfigButton = document.getElementById('save-config-button');
 const cancelConfigButton = document.getElementById('cancel-config-button');
 
-// Geral / Outros
+// Geral / Navegação
 const themeSwitch = document.getElementById('nav-theme-switch');
 const cookieBanner = document.getElementById('cookie-banner');
 const cookieAcceptButton = document.getElementById('cookie-accept-button');
-const navButtons = document.querySelectorAll('.nav-button'); // Botões da navegação mobile
+const navButtons = document.querySelectorAll('.nav-button');
+const projectIntro = document.querySelector('.project-intro'); // Referência à descrição
 
 // =======================================
-// 2. Funções Auxiliares de Cookies
+// 2. Funções de Cookies (Persistência)
 // =======================================
 
-/**
- * Salva um cookie no navegador.
- */
 function setCookie(name, value, days) {
     let expires = "";
     if (days) {
@@ -79,13 +80,9 @@ function setCookie(name, value, days) {
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
     }
-    // SameSite=Lax é importante para segurança moderna
     document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax";
 }
 
-/**
- * Recupera o valor de um cookie.
- */
 function getCookie(name) {
     const nameEQ = name + "=";
     const ca = document.cookie.split(';');
@@ -98,46 +95,37 @@ function getCookie(name) {
 }
 
 // =======================================
-// 3. Lógica do Pomodoro (Timer)
+// 3. Lógica do Pomodoro e Alarme
 // =======================================
 
-/**
- * Atualiza o display do timer (MM:SS) e o título da aba.
- */
 function updateDisplay() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     
-    // Formata com zero à esquerda se necessário (ex: 09:05)
+    // Formata MM:SS
     timerDisplay.textContent = 
         `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-    // Atualiza texto e cor do status
+    // Atualiza texto e estilo do status
     let statusText;
     if (mode === 'focus') {
-        statusText = 'Foco';
-        timerStatus.className = 'current-mode-focus';
-    } else if (mode === 'shortBreak') {
-        statusText = 'Pausa Curta';
-        timerStatus.className = 'current-mode-break';
+        statusText = 'FOCO';
+        timerStatus.className = 'timer-mode';
     } else {
-        statusText = 'Pausa Longa';
-        timerStatus.className = 'current-mode-break';
+        statusText = (mode === 'shortBreak') ? 'PAUSA CURTA' : 'PAUSA LONGA';
+        timerStatus.className = 'timer-mode break-mode';
     }
     timerStatus.textContent = statusText;
-
-    // Atualiza título da página
-    document.title = `(${timerDisplay.textContent}) Zentry | ${statusText}`;
+    document.title = `(${timerDisplay.textContent}) Zentry`;
 }
 
-/**
- * Inicia a contagem regressiva.
- */
 function startTimer() {
     if (isRunning) return;
     isRunning = true;
     
-    // Alterna visibilidade dos botões
+    // Remove classe de alarme se o usuário iniciar o timer
+    timerDisplay.classList.remove('timer-alarm');
+    
     startButton.style.display = 'none';
     pauseButton.style.display = 'inline-block';
     
@@ -152,9 +140,6 @@ function startTimer() {
     }, 1000);
 }
 
-/**
- * Pausa a contagem regressiva.
- */
 function pauseTimer() {
     if (!isRunning) return;
     isRunning = false;
@@ -164,107 +149,84 @@ function pauseTimer() {
     pauseButton.style.display = 'none';
 }
 
-/**
- * Reseta o timer para o início do ciclo de foco.
- */
 function resetTimer() {
     pauseTimer();
-    
-    // Volta para o padrão
     mode = 'focus';
     currentSession = 1;
+    timerDisplay.classList.remove('timer-alarm'); // Limpa alarme visual
     updateTimerMode(); 
     
     startButton.style.display = 'inline-block';
     pauseButton.style.display = 'none';
 }
 
-/**
- * Lógica executada quando o tempo acaba (Troca de modos).
- */
 function handleTimerEnd() {
-    // Toca som de notificação (Se desejar, descomente a linha abaixo e adicione o arquivo)
-    // new Audio('notification.mp3').play(); 
+    // 1. Tocar Alarme Sonoro
+    alarmSound.play().catch(error => console.log("Interação necessária para tocar áudio"));
+    
+    // 2. Ativar Alarme Visual (Piscar Vermelho definido no CSS)
+    timerDisplay.classList.add('timer-alarm');
 
+    // 3. Alternar Modos
     if (mode === 'focus') {
-        // Se acabou o foco, incrementa sessão e decide qual pausa tirar
         currentSession++; 
         if (currentSession > config.sessionsBeforeLongBreak) {
             mode = 'longBreak';
-            currentSession = 1; // Reseta ciclo após pausa longa
+            currentSession = 1; 
         } else {
             mode = 'shortBreak';
         }
     } else {
-        // Se acabou a pausa, volta para o foco
         mode = 'focus';
     }
 
     updateTimerMode();
-    startTimer(); // Inicia automaticamente o próximo ciclo
+    
+    // Para o timer para o usuário ouvir o alarme. O usuário deve clicar em "Iniciar" para continuar.
+    isRunning = false;
+    startButton.style.display = 'inline-block';
+    pauseButton.style.display = 'none';
 }
 
-/**
- * Recalcula o tempo baseado no modo atual e configuração.
- */
 function updateTimerMode() {
     let newTime;
-    
-    if (mode === 'focus') {
-        newTime = config.focusTime;
-    } else if (mode === 'shortBreak') {
-        newTime = config.shortBreak;
-    } else {
-        newTime = config.longBreak;
-    }
+    if (mode === 'focus') newTime = config.focusTime;
+    else if (mode === 'shortBreak') newTime = config.shortBreak;
+    else newTime = config.longBreak;
 
     timeLeft = newTime * 60;
     
-    // Atualiza contadores visuais
     currentSessionSpan.textContent = currentSession;
     totalSessionsSpan.textContent = config.sessionsBeforeLongBreak;
-    
     updateDisplay();
 }
 
 // =======================================
-// 4. Lógica da Lista de Tarefas e Exercícios
+// 4. Lógica de Tarefas (Z-Cards)
 // =======================================
 
-/**
- * Retorna o array da lista que está ativa no momento.
- */
 function getActiveList() {
-    if (activeList === 'tasks') {
-        return tasks;
-    } else {
-        return exercises;
-    }
+    return activeList === 'tasks' ? tasks : exercises;
 }
 
-/**
- * Renderiza a lista completa no HTML.
- */
 function renderTasks() {
-    taskList.innerHTML = ''; // Limpa a lista atual
+    taskList.innerHTML = '';
     const list = getActiveList();
     
-    // Define se a lista atual suporta subtarefas
-    const isTaskMode = (activeList === 'tasks'); 
+    // Verifica se estamos no modo "Tarefas" (que permite subtarefas)
+    const isTaskMode = (activeList === 'tasks');
     
-    // Atualiza o título do painel
     taskPanelTitle.textContent = isTaskMode ? 'Lista de Tarefas (Z-Cards)' : 'Exercícios';
 
     list.forEach((masterTask, index) => {
-        // Cria o item da lista (Master Task)
         const masterLi = document.createElement('li');
         masterLi.className = `task-item master-task ${masterTask.status}`; 
         
-        // --- HEADER DA TAREFA ---
+        // --- Header da Tarefa ---
         const headerDiv = document.createElement('div');
         headerDiv.className = 'task-header';
 
-        // 1. Botão Minimizar (Só faz sentido se houver subtarefas, mas mantemos para padrão)
+        // Botão Minimizar
         const minimizeButton = document.createElement('button');
         minimizeButton.className = 'minimize-button';
         minimizeButton.textContent = masterTask.minimized ? '▶' : '▼';
@@ -273,60 +235,57 @@ function renderTasks() {
             toggleMinimize(index);
         };
         
-        // 2. Botão Adicionar Subtarefa (Condicional: Só aparece no modo Tarefas)
+        // Botão Adicionar Subtarefa (Só aparece se for "Tarefas")
         const addSubtaskButton = document.createElement('button');
         addSubtaskButton.className = 'add-subtask-button';
         addSubtaskButton.innerHTML = '+'; 
         addSubtaskButton.title = 'Adicionar Subtarefa';
         addSubtaskButton.onclick = (e) => {
             e.stopPropagation(); 
-            addSubtaskPrompt(index); // Chama função de prompt
+            addSubtaskPrompt(index); 
         };
         
-        // Se for Exercícios, esconde o botão de adicionar subtarefa
         if (!isTaskMode) {
             addSubtaskButton.style.display = 'none';
-            // Opcional: Esconder também o botão de minimizar se não tiver subtarefas
-            minimizeButton.style.visibility = 'hidden';
+            minimizeButton.style.visibility = 'hidden'; // Sem subtarefas, não precisa minimizar
         }
         
-        // 3. Texto da Tarefa
         const taskTextSpan = document.createElement('span');
         taskTextSpan.className = 'task-text';
         taskTextSpan.textContent = masterTask.text;
 
-        // 4. Select de Status
+        // Select de Status
         const statusSelect = document.createElement('select');
         statusSelect.className = 'status-select';
         statusSelect.innerHTML = `
             <option value="${STATUS_OPEN}" ${masterTask.status === STATUS_OPEN ? 'selected' : ''}>Aberto</option>
-            <option value="${STATUS_IN_PROGRESS}" ${masterTask.status === STATUS_IN_PROGRESS ? 'selected' : ''}>Em Andamento</option>
+            <option value="${STATUS_IN_PROGRESS}" ${masterTask.status === STATUS_IN_PROGRESS ? 'selected' : ''}>Andamento</option>
             <option value="${STATUS_COMPLETED}" ${masterTask.status === STATUS_COMPLETED ? 'selected' : ''}>Concluída</option>
         `;
-        statusSelect.onclick = (e) => e.stopPropagation(); // Evita clicks indesejados
+        statusSelect.onclick = (e) => e.stopPropagation(); 
         statusSelect.onchange = (e) => {
             updateTaskStatus(index, e.target.value);
         };
 
-        // 5. Botão Deletar
+        // Botão Excluir
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'x';
-        deleteButton.title = 'Remover Item';
+        deleteButton.title = 'Remover Tarefa Principal';
+        deleteButton.className = 'delete-btn';
         deleteButton.onclick = (e) => {
             e.stopPropagation(); 
             deleteTask(index);
         };
         
-        // Monta o Header
+        // Montagem
         headerDiv.appendChild(minimizeButton);
-        if (isTaskMode) headerDiv.appendChild(addSubtaskButton); // Só adiciona se for tarefa
+        if (isTaskMode) headerDiv.appendChild(addSubtaskButton);
         headerDiv.appendChild(taskTextSpan);
         headerDiv.appendChild(statusSelect);
         headerDiv.appendChild(deleteButton);
         masterLi.appendChild(headerDiv);
 
-        // --- SUBTAREFAS (Renderização) ---
-        // Só renderiza se: for modo Tarefas, não estiver minimizado e tiver subtarefas
+        // --- Renderização de Subtarefas (Se existirem e não estiver minimizado) ---
         if (isTaskMode && !masterTask.minimized && masterTask.subtasks && masterTask.subtasks.length > 0) {
             const subtaskList = document.createElement('ul');
             subtaskList.className = 'subtask-list';
@@ -353,7 +312,7 @@ function renderTasks() {
                 
                 const subDeleteButton = document.createElement('button');
                 subDeleteButton.textContent = 'x';
-                subDeleteButton.title = 'Remover Subtarefa';
+                subDeleteButton.className = 'delete-btn';
                 subDeleteButton.onclick = (e) => {
                     e.stopPropagation(); 
                     deleteSubTask(index, subIndex);
@@ -371,40 +330,30 @@ function renderTasks() {
         taskList.appendChild(masterLi);
     });
     
-    // Salva alterações nos cookies sempre que renderizar
     saveTasks(); 
 }
 
-/**
- * Adiciona uma nova Master Task (ou Exercício).
- */
 function addTask() {
     const text = newTaskText.value.trim();
     if (text === '') return;
     
-    // Verificação de consentimento de cookies
     if (getCookie(COOKIE_CONSENT) !== 'true') {
-        alert('Por favor, aceite o uso de cookies para salvar suas atividades na próxima visita.');
+        alert('Por favor, aceite o uso de cookies para salvar suas atividades.');
         return; 
     }
 
     const list = getActiveList();
-    
-    // Adiciona o novo item
     list.push({ 
         text: text, 
         status: STATUS_OPEN, 
         minimized: false, 
-        subtasks: [] // Array vazio, será preenchido via botão '+' se for Tarefa
+        subtasks: [] 
     }); 
     
     newTaskText.value = '';
     renderTasks();
 }
 
-/**
- * Abre um prompt para adicionar subtarefa a um item específico.
- */
 function addSubtaskPrompt(masterIndex) {
     const list = getActiveList();
     const masterTask = list[masterIndex];
@@ -416,14 +365,12 @@ function addSubtaskPrompt(masterIndex) {
             text: subtaskText.trim(),
             status: STATUS_OPEN
         });
-        // Expande automaticamente para mostrar a nova subtarefa
         masterTask.minimized = false; 
         renderTasks();
     }
 }
 
-// Funções de Manipulação de Estado (Delete, Status, Minimize)
-
+// Funções de Manipulação de Array
 function deleteTask(index) {
     const list = getActiveList();
     list.splice(index, 1);
@@ -462,51 +409,33 @@ function deleteSubTask(masterIndex, subIndex) {
     }
 }
 
-/**
- * Salva as listas nos cookies.
- */
 function saveTasks() {
     if (getCookie(COOKIE_CONSENT) !== 'true') return;
-    try {
-        setCookie('zentry_tasks', JSON.stringify(tasks), 30); 
-        setCookie('zentry_exercises', JSON.stringify(exercises), 30);
-    } catch (e) {
-        console.error('Erro ao salvar listas no cookie:', e);
-    }
+    setCookie('zentry_tasks', JSON.stringify(tasks), 30); 
+    setCookie('zentry_exercises', JSON.stringify(exercises), 30);
 }
 
-/**
- * Carrega as listas dos cookies.
- */
 function loadTasks() {
     if (getCookie(COOKIE_CONSENT) === 'true') {
-        const tasksValue = getCookie('zentry_tasks');
-        const exercisesValue = getCookie('zentry_exercises');
-
+        const t = getCookie('zentry_tasks');
+        const e = getCookie('zentry_exercises');
         try {
-            if (tasksValue) tasks = JSON.parse(tasksValue);
-            if (exercisesValue) exercises = JSON.parse(exercisesValue);
-        } catch (e) {
-            console.error('Erro ao carregar listas do cookie:', e);
-            tasks = [];
-            exercises = [];
+            if (t) tasks = JSON.parse(t);
+            if (e) exercises = JSON.parse(e);
+        } catch (err) {
+            console.error('Erro ao carregar cookies', err);
         }
     }
     renderTasks();
 }
 
-/**
- * Troca entre a lista de Tarefas e Exercícios.
- */
 function switchList(type) {
-    if (type !== activeList) {
-        activeList = type;
-        renderTasks();
-    }
+    activeList = type;
+    renderTasks();
 }
 
 // =======================================
-// 5. Configurações e Tema
+// 5. Configurações e Temas
 // =======================================
 
 function openConfigModal() {
@@ -521,75 +450,94 @@ function closeConfigModal() {
 }
 
 function saveConfig() {
-    const newFocus = parseInt(focusTimeInput.value);
-    const newShortBreak = parseInt(shortBreakInput.value);
-    const newLongBreak = parseInt(longBreakInput.value);
+    const f = parseInt(focusTimeInput.value);
+    const s = parseInt(shortBreakInput.value);
+    const l = parseInt(longBreakInput.value);
 
-    if (newFocus < 1 || newShortBreak < 1 || newLongBreak < 1 || isNaN(newFocus)) {
-        alert('Os tempos de Foco e Pausa devem ser números válidos e maiores que zero.');
-        return;
+    if (f > 0 && s > 0 && l > 0) {
+        config = { ...config, focusTime: f, shortBreak: s, longBreak: l };
+        if (getCookie(COOKIE_CONSENT) === 'true') {
+             setCookie(CONFIG_COOKIE, JSON.stringify(config), 365);
+        }
+        resetTimer(); 
+        closeConfigModal();
+    } else {
+        alert('Valores inválidos');
     }
-
-    config = {
-        ...config,
-        focusTime: newFocus,
-        shortBreak: newShortBreak,
-        longBreak: newLongBreak,
-    };
-    
-    if (getCookie(COOKIE_CONSENT) === 'true') {
-         setCookie(CONFIG_COOKIE, JSON.stringify(config), 365);
-    }
-
-    resetTimer(); 
-    closeConfigModal();
 }
 
 function loadConfig() {
-    const savedConfig = getCookie(CONFIG_COOKIE);
-    if (savedConfig) {
-        try {
-            const loaded = JSON.parse(savedConfig);
-            config = { ...config, ...loaded }; 
-        } catch (e) {
-            console.error('Erro ao carregar configuração do Pomodoro:', e);
-        }
+    const saved = getCookie(CONFIG_COOKIE);
+    if (saved) {
+        try { config = { ...config, ...JSON.parse(saved) }; } catch (e) {}
     }
 }
 
 function loadTheme() {
     const savedTheme = getCookie(THEME_COOKIE);
     const isDark = savedTheme === 'dark' || (!savedTheme && document.body.classList.contains('dark'));
-    
-    document.body.classList.remove('dark', 'light');
-
-    if (isDark) {
-        document.body.classList.add('dark');
-        themeSwitch.checked = true;
-    } else {
-        document.body.classList.add('light');
-        themeSwitch.checked = false;
-    }
+    document.body.className = isDark ? 'dark' : 'light';
+    themeSwitch.checked = isDark;
 }
 
 function toggleTheme() {
     const isDark = document.body.classList.contains('dark');
-    
-    document.body.classList.remove('dark', 'light');
-
-    if (isDark) {
-        document.body.classList.add('light');
-        if (getCookie(COOKIE_CONSENT) === 'true') setCookie(THEME_COOKIE, 'light', 365);
-    } else {
-        document.body.classList.add('dark');
-        if (getCookie(COOKIE_CONSENT) === 'true') setCookie(THEME_COOKIE, 'dark', 365);
-    }
+    document.body.className = isDark ? 'light' : 'dark';
+    if (getCookie(COOKIE_CONSENT) === 'true') setCookie(THEME_COOKIE, isDark ? 'light' : 'dark', 365);
     themeSwitch.checked = !isDark;
 }
 
 // =======================================
-// 6. Consentimento de Cookies e Navegação Mobile
+// 6. Navegação Mobile & Responsividade
 // =======================================
+
+function setupMobileNavigation() {
+    // Inicia mostrando tarefas
+    showPanel('panel-tasks');
+
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetPanel = button.getAttribute('data-panel');
+            
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            showPanel(targetPanel);
+        });
+    });
+}
+
+/**
+ * Controla qual painel é exibido e a visibilidade da Descrição
+ */
+function showPanel(targetClass) {
+    const isMobile = window.innerWidth <= 768;
+    const panels = document.querySelectorAll('.panel');
+    
+    panels.forEach(p => {
+        p.classList.remove('active-mobile');
+        if (isMobile) p.style.display = 'none';
+    });
+
+    const active = document.querySelector(`.${targetClass}`);
+    if (active) {
+        active.classList.add('active-mobile');
+        if (isMobile) active.style.display = 'flex';
+    }
+
+    // Lógica da Descrição (.project-intro) no Mobile
+    // Solicitação: "Mobile bota a descrição menor e apenas na tela de tarefas"
+    if (isMobile) {
+        if (targetClass === 'panel-tasks') {
+            projectIntro.style.display = 'block';
+        } else {
+            projectIntro.style.display = 'none';
+        }
+    } else {
+        // No Desktop sempre mostra
+        projectIntro.style.display = 'block';
+    }
+}
 
 function handleCookieConsent() {
     if (getCookie(COOKIE_CONSENT) === 'true') {
@@ -599,100 +547,39 @@ function handleCookieConsent() {
     }
 }
 
-function acceptCookies() {
-    setCookie(COOKIE_CONSENT, 'true', 365);
-    cookieBanner.style.display = 'none';
-    loadTasks();
-    loadConfig();
-    // Salva o tema atual
-    const isCurrentlyDark = document.body.classList.contains('dark');
-    setCookie(THEME_COOKIE, isCurrentlyDark ? 'dark' : 'light', 365);
-}
-
-// --- Navegação Mobile ---
-
-function setupMobileNavigation() {
-    showPanel('panel-tasks'); // Inicia na aba de tarefas
-
-    navButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const targetPanel = button.getAttribute('data-panel');
-            
-            // Atualiza classe active do botão
-            navButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            showPanel(targetPanel);
-        });
-    });
-}
-
-function showPanel(targetPanelClass) {
-    const panels = document.querySelectorAll('.panel');
-    
-    // Verifica se é mobile (largura <= 650px conforme CSS)
-    const isMobile = window.innerWidth <= 650;
-    
-    panels.forEach(panel => {
-        panel.classList.remove('active-mobile');
-        
-        if (isMobile) {
-            panel.style.display = 'none'; // Esconde todos no mobile
-        }
-    });
-
-    const activePanel = document.querySelector(`.${targetPanelClass}`);
-    if (activePanel) {
-        activePanel.classList.add('active-mobile');
-        if (isMobile) {
-            activePanel.style.display = 'block'; // Mostra apenas o ativo
-        }
-    }
-}
-
 // =======================================
-// 7. Inicialização (Event Listeners e Window Load)
+// 7. Inicialização
 // =======================================
 
-// Event Listeners do Timer
 startButton.addEventListener('click', startTimer);
 pauseButton.addEventListener('click', pauseTimer);
 resetButton.addEventListener('click', resetTimer);
 
-// Event Listeners de Configuração
 configButton.addEventListener('click', openConfigModal);
 saveConfigButton.addEventListener('click', saveConfig);
 cancelConfigButton.addEventListener('click', closeConfigModal);
-// Fecha modal ao clicar fora
-configModalOverlay.addEventListener('click', (e) => {
-    if (e.target === configModalOverlay) closeConfigModal();
-});
+configModalOverlay.addEventListener('click', (e) => { if (e.target === configModalOverlay) closeConfigModal(); });
 
-// Event Listeners de Tarefas
-newTaskText.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        addTask();
-    }
-});
-
-// Switch de Listas
+newTaskText.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
 switchTasks.addEventListener('change', () => switchList('tasks'));
 switchExercises.addEventListener('change', () => switchList('exercises'));
 
-// Switch de Tema
 themeSwitch.addEventListener('change', toggleTheme);
 
-// Botão de Cookie
-cookieAcceptButton.addEventListener('click', acceptCookies);
+cookieAcceptButton.addEventListener('click', () => {
+    setCookie(COOKIE_CONSENT, 'true', 365);
+    cookieBanner.style.display = 'none';
+    loadTasks();
+    loadConfig();
+    setCookie(THEME_COOKIE, document.body.className, 365);
+});
 
-// Listener de Resize para corrigir navegação se a tela mudar de tamanho
 window.addEventListener('resize', () => {
-    const currentActive = document.querySelector('.nav-button.active');
-    const target = currentActive ? currentActive.getAttribute('data-panel') : 'panel-tasks';
+    const activeBtn = document.querySelector('.nav-button.active');
+    const target = activeBtn ? activeBtn.getAttribute('data-panel') : 'panel-tasks';
     showPanel(target);
 });
 
-// Função Principal de Carga
 window.onload = () => {
     handleCookieConsent();
     loadConfig();
