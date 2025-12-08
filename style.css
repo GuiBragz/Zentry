@@ -3,10 +3,9 @@
 /* ======================================= */
 
 :root, .dark {
-    /* MUDANÇA AQUI: De preto absoluto para Cinza Escuro */
     --bg-body: #181818;       /* Cinza escuro de fundo */
-    --bg-panel: #242424;      /* Cinza um pouco mais claro para os cards */
-    --bg-element: #333333;    /* Cinza para inputs/botões */
+    --bg-panel: #242424;      /* Cinza médio para cards */
+    --bg-element: #333333;    /* Elementos internos */
     
     --text-main: #e0e0e0;     /* Branco gelo */
     --text-muted: #a0a0a0;    /* Cinza claro */
@@ -15,8 +14,8 @@
     --accent-dim: rgba(0, 255, 65, 0.05); /* Verde bem suave para o grid */
     --accent-glow: rgba(0, 255, 65, 0.2); /* Brilho */
     
-    --border: #404040;        /* Bordas um pouco mais claras que o fundo */
-    --error: #ff4444;         
+    --border: #404040;        /* Bordas */
+    --error: #ff4444;         /* Vermelho para erros/pausa */
     
     --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     --font-mono: 'Courier New', Courier, monospace; 
@@ -55,7 +54,7 @@ body {
     color: var(--text-main);
     min-height: 100vh;
     
-    /* Grade sutil no fundo cinza */
+    /* Grade sutil animada */
     background-image: 
         linear-gradient(var(--accent-dim) 1px, transparent 1px),
         linear-gradient(90deg, var(--accent-dim) 1px, transparent 1px);
@@ -84,8 +83,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0 30px;
-    /* Fundo semi-transparente baseado no cinza novo */
-    background: rgba(30, 30, 30, 0.9); 
+    background: rgba(30, 30, 30, 0.95); 
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
     z-index: 1000;
@@ -100,6 +98,27 @@ body {
     text-transform: uppercase; 
     letter-spacing: 2px;
     text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.nav-right { display: flex; align-items: center; gap: 20px; }
+
+/* Botão de Feedback na Navbar */
+.nav-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+.nav-icon-btn:hover {
+    color: var(--accent);
+    background-color: var(--bg-element);
+    box-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* Switch de Tema */
@@ -140,7 +159,7 @@ input:checked + .switch::after {
     gap: 30px;
 }
 
-/* Intro */
+/* Seção de Intro */
 .project-intro {
     width: 100%;
     text-align: center;
@@ -166,7 +185,7 @@ input:checked + .switch::after {
 }
 .project-intro strong { color: var(--accent); }
 
-/* Grid */
+/* Grid dos Cards */
 .cards-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr); 
@@ -174,7 +193,7 @@ input:checked + .switch::after {
     align-items: start;
 }
 
-/* Painéis (Cards) */
+/* Estilo Base dos Painéis */
 .panel {
     background-color: var(--bg-panel);
     border: 1px solid var(--border);
@@ -185,7 +204,7 @@ input:checked + .switch::after {
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2); /* Sombra mais suave no cinza */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
 .panel::before {
@@ -204,6 +223,7 @@ input:checked + .switch::after {
 /* 5. Painel de Tarefas                    */
 /* ======================================= */
 
+/* Switch de Lista (Tarefas/Exercícios) */
 .task-list-switch { 
     display: flex; background: var(--bg-element); 
     padding: 5px; border-radius: 8px; margin-bottom: 20px; 
@@ -220,6 +240,7 @@ input:checked + .switch::after {
     font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
 }
 
+/* Input e Lista */
 #task-input { display: flex; gap: 10px; margin-bottom: 20px; }
 #new-task-text { 
     flex-grow: 1; padding: 12px; 
@@ -228,7 +249,7 @@ input:checked + .switch::after {
 }
 #new-task-text:focus { border-color: var(--accent); }
 #task-input button { 
-    background: var(--accent); color: #121212; /* Contraste melhor no cinza */
+    background: var(--accent); color: #121212; 
     font-weight: bold; font-size: 1.5em; width: 50px; 
     border: none; border-radius: 6px; cursor: pointer; 
 }
@@ -240,9 +261,9 @@ input:checked + .switch::after {
     display: flex; flex-direction: column; gap: 5px;
 }
 .task-header { display: flex; align-items: center; width: 100%; }
-
 .task-text { flex-grow: 1; font-size: 1.05em; margin: 0 10px; word-break: break-word; }
 
+/* Botões da Tarefa */
 .minimize-button, .add-subtask-button, .delete-btn { 
     background: none; border: none; cursor: pointer; 
     color: var(--text-muted); font-size: 1.2em; padding: 5px; 
@@ -259,6 +280,7 @@ input:checked + .switch::after {
     border-radius: 4px; font-size: 0.85em; margin-right: 5px; 
 }
 
+/* Subtarefas */
 .subtask-list { 
     margin-top: 10px; margin-left: 10px; 
     padding-left: 15px; border-left: 2px dashed var(--border); 
@@ -292,30 +314,23 @@ input:checked + .switch::after {
     transition: color 0.2s;
 }
 
+/* Animação de Alarme */
 @keyframes blinkRed {
-    0% { color: var(--text-main); text-shadow: none; }
+    0%, 100% { color: var(--text-main); text-shadow: none; }
     50% { color: var(--error); text-shadow: 0 0 20px var(--error); }
-    100% { color: var(--text-main); text-shadow: none; }
 }
 .timer-alarm { animation: blinkRed 1s infinite; }
 
 .timer-controls { display: flex; gap: 10px; margin-bottom: 20px; }
-
 .timer-controls button { 
-    padding: 12px 25px; font-size: 1em; 
-    text-transform: uppercase; font-weight: 800; 
-    border: 2px solid transparent; border-radius: 6px; 
+    padding: 12px 25px; font-size: 1em; text-transform: uppercase; 
+    font-weight: 800; border: 2px solid transparent; border-radius: 6px; 
     cursor: pointer; margin: 0 5px;
 }
-
 #start-button { background: var(--accent); color: #121212; }
 #start-button:hover { background: #fff; box-shadow: 0 0 15px var(--accent); }
-
 #pause-button { background: var(--error); color: #fff; }
-
-#reset-button { 
-    background: transparent; border-color: var(--border); color: var(--text-muted); 
-}
+#reset-button { background: transparent; border-color: var(--border); color: var(--text-muted); }
 #reset-button:hover { border-color: var(--text-main); color: var(--text-main); }
 
 .session-tracker { color: var(--text-muted); font-size: 0.9em; }
@@ -325,7 +340,7 @@ input:checked + .switch::after {
 }
 
 /* ======================================= */
-/* 7. Painel de Mídia e Link GitHub        */
+/* 7. Mídia e Link GitHub                  */
 /* ======================================= */
 
 .panel-media { justify-content: center; }
@@ -365,6 +380,15 @@ input:checked + .switch::after {
 .config-group input { width: 80px; text-align: center; padding: 8px; background: var(--bg-element); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; }
 .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 
+/* Estilo do Textarea de Feedback */
+textarea {
+    width: 100%; min-height: 120px; padding: 10px;
+    background: var(--bg-element); border: 1px solid var(--border);
+    color: var(--text-main); border-radius: 8px;
+    font-family: inherit; font-size: 1rem; resize: vertical; outline: none;
+}
+textarea:focus { border-color: var(--accent); box-shadow: 0 0 5px var(--accent-glow); }
+
 #cookie-banner { 
     position: fixed; bottom: 0; left: 0; width: 100%; 
     background: var(--bg-element); border-top: 1px solid var(--border); 
@@ -392,14 +416,15 @@ input:checked + .switch::after {
     .project-intro { padding: 15px; margin-bottom: 20px; }
     .project-intro p { font-size: 0.9rem; line-height: 1.4; max-width: 100%; }
 
+    /* Grid vira Bloco */
     .cards-grid { display: block; }
     .panel { display: none; min-height: auto; margin-bottom: 20px; }
     .panel.active-mobile { display: flex; animation: fadeUp 0.3s ease-in-out; }
     
+    /* Barra de Navegação Inferior */
     .bottom-navbar { 
         display: flex; position: fixed; bottom: 0; left: 0; width: 100%; 
-        background: rgba(24, 24, 24, 0.98); /* Cinza escuro nav */
-        border-top: 2px solid var(--border); 
+        background: rgba(30, 30, 30, 0.98); border-top: 2px solid var(--border); 
         height: 80px; justify-content: space-around; align-items: center; 
         z-index: 9999; backdrop-filter: blur(10px);
     }
@@ -417,14 +442,10 @@ input:checked + .switch::after {
     }
     
     .github-link { bottom: 95px; right: 15px; padding: 5px 10px; font-size: 0.8em; }
-    
     #cookie-banner { flex-direction: column; gap: 10px; text-align: center; padding-bottom: 90px; }
     #cookie-banner button { width: 100%; }
     
     #timer-display { font-size: 4.5em; }
 }
 
-@keyframes fadeUp { 
-    from { opacity: 0; transform: translateY(10px); } 
-    to { opacity: 1; transform: translateY(0); } 
-}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
