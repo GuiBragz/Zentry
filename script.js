@@ -1,12 +1,7 @@
-// =======================================
-// 1. Variáveis Globais e Configurações
-// =======================================
-
 const COOKIE_CONSENT = 'zentry_cookie_accepted';
 const CONFIG_COOKIE = 'zentry_pomodoro_config';
 const THEME_COOKIE = 'zentry_theme';
 
-// Configurações Padrão
 let config = { focusTime: 25, shortBreak: 5, longBreak: 15, sessionsBeforeLongBreak: 4 };
 let mode = 'focus'; 
 let timeLeft = config.focusTime * 60; 
@@ -20,12 +15,6 @@ let tasks = [];
 let exercises = [];
 let activeList = 'tasks'; 
 
-// =======================================
-// 2. Seleção de Elementos (GLOBAIS)
-// =======================================
-// Selecionamos fora para garantir que todas as funções enxerguem
-
-// Timer
 const timerDisplay = document.getElementById('timer-display');
 const timerStatus = document.getElementById('timer-status');
 const startButton = document.getElementById('start-button');
@@ -34,14 +23,12 @@ const resetButton = document.getElementById('reset-button');
 const currentSessionSpan = document.getElementById('current-session');
 const totalSessionsSpan = document.getElementById('total-sessions');
 
-// Tarefas
 const taskList = document.getElementById('task-list');
 const newTaskText = document.getElementById('new-task-text');
 const taskPanelTitle = document.getElementById('task-panel-title');
 const switchTasks = document.getElementById('switch-tasks');
 const switchExercises = document.getElementById('switch-exercises');
 
-// Modais - Configuração
 const configButton = document.getElementById('config-button');
 const configModalOverlay = document.getElementById('config-modal-overlay');
 const focusTimeInput = document.getElementById('focus-time-input');
@@ -50,22 +37,16 @@ const longBreakInput = document.getElementById('long-break-input');
 const saveConfigButton = document.getElementById('save-config-button');
 const cancelConfigButton = document.getElementById('cancel-config-button');
 
-// Modais - Feedback
 const feedbackTrigger = document.getElementById('feedback-trigger');
 const feedbackModal = document.getElementById('feedback-modal-overlay');
 const cancelFeedbackBtn = document.getElementById('cancel-feedback-button');
 const feedbackText = document.getElementById('feedback-text');
 
-// Outros
 const themeSwitch = document.getElementById('nav-theme-switch');
 const cookieBanner = document.getElementById('cookie-banner');
 const cookieAcceptButton = document.getElementById('cookie-accept-button');
 const navButtons = document.querySelectorAll('.nav-button');
 const projectIntro = document.querySelector('.project-intro');
-
-// =======================================
-// 3. Funções do Pomodoro
-// =======================================
 
 function updateDisplay() {
     const minutes = Math.floor(timeLeft / 60);
@@ -138,10 +119,6 @@ function updateTimerMode() {
     updateDisplay();
 }
 
-// =======================================
-// 4. Configuração (A Correção Está Aqui)
-// =======================================
-
 function openConfigModal() {
     if(focusTimeInput) focusTimeInput.value = config.focusTime;
     if(shortBreakInput) shortBreakInput.value = config.shortBreak;
@@ -170,11 +147,6 @@ function saveConfig() {
     }
 }
 
-// =======================================
-// 5. Tarefas (Funções Globais para o HTML)
-// =======================================
-
-// Torna as funções acessíveis ao HTML (onclick)
 window.addTask = function() {
     const text = newTaskText.value.trim();
     if (text === '') return;
@@ -237,11 +209,9 @@ function renderTasks() {
         const masterLi = document.createElement('li');
         masterLi.className = `task-item master-task ${masterTask.status}`; 
         
-        // Botões e Lógica de Exibição
         const displaySubBtn = canHaveSubtasks ? 'inline-block' : 'none';
-        const displayMinBtn = canHaveSubtasks ? 'inline-block' : 'hidden'; // Oculta mas ocupa espaço ou none? Vamos usar visibility se quiser alinhar
+        const displayMinBtn = canHaveSubtasks ? 'inline-block' : 'hidden';
 
-        // HTML Interno do Card
         masterLi.innerHTML = `
             <div class="task-header">
                 <button class="minimize-button" style="visibility: ${masterTask.subtasks.length > 0 ? 'visible' : 'hidden'}; display: ${canHaveSubtasks ? 'inline-block' : 'none'}" onclick="toggleMinimize(${index})">
@@ -261,7 +231,6 @@ function renderTasks() {
             </div>
         `;
 
-        // Renderiza Subtarefas
         if (canHaveSubtasks && !masterTask.minimized && masterTask.subtasks.length > 0) {
             const subUl = document.createElement('ul');
             subUl.className = 'subtask-list';
@@ -304,10 +273,6 @@ function loadTasks() {
     renderTasks();
 }
 
-// =======================================
-// 6. Cookies e Tema
-// =======================================
-
 function setCookie(name, value, days) {
     let expires = "";
     if (days) {
@@ -331,7 +296,6 @@ function getCookie(name) {
 
 function loadTheme() {
     const savedTheme = getCookie(THEME_COOKIE);
-    // Padrão dark se não tiver cookie
     const isDark = savedTheme === 'dark' || !savedTheme;
     
     if (isDark) {
@@ -356,10 +320,6 @@ function toggleTheme() {
         if (getCookie(COOKIE_CONSENT) === 'true') setCookie(THEME_COOKIE, 'dark', 365);
     }
 }
-
-// =======================================
-// 7. Mobile Nav & Init
-// =======================================
 
 function setupMobileNavigation() {
     showPanel('panel-tasks');
@@ -404,9 +364,7 @@ function handleCookieConsent() {
     else cookieBanner.style.display = 'flex';
 }
 
-// --- EVENT LISTENERS DE INICIALIZAÇÃO ---
 window.onload = () => {
-    // Carrega dados
     handleCookieConsent();
     loadConfig();
     loadTheme();
@@ -414,17 +372,14 @@ window.onload = () => {
     updateTimerMode(); 
     setupMobileNavigation();
 
-    // Timer Events
     startButton.addEventListener('click', startTimer);
     pauseButton.addEventListener('click', pauseTimer);
     resetButton.addEventListener('click', resetTimer);
 
-    // Config Events
     configButton.addEventListener('click', openConfigModal);
     cancelConfigButton.addEventListener('click', () => configModalOverlay.style.display = 'none');
     saveConfigButton.addEventListener('click', saveConfig);
 
-    // Feedback Modal Events
     if(feedbackTrigger) {
         feedbackTrigger.addEventListener('click', () => {
             if(feedbackText) feedbackText.value = '';
@@ -435,28 +390,23 @@ window.onload = () => {
         cancelFeedbackBtn.addEventListener('click', () => feedbackModal.style.display = 'none');
     }
 
-    // Task Events
     newTaskText.addEventListener('keypress', e => { if(e.key === 'Enter') addTask(); });
     switchTasks.addEventListener('change', () => { activeList = 'tasks'; renderTasks(); });
     switchExercises.addEventListener('change', () => { activeList = 'exercises'; renderTasks(); });
 
-    // Theme
     themeSwitch.addEventListener('change', toggleTheme);
 
-    // Cookie Accept
     cookieAcceptButton.addEventListener('click', () => {
         setCookie(COOKIE_CONSENT, 'true', 365);
         cookieBanner.style.display = 'none';
         loadTasks();
     });
 
-    // Close Modals on Outside Click
     window.addEventListener('click', (e) => {
         if (e.target === configModalOverlay) configModalOverlay.style.display = 'none';
         if (e.target === feedbackModal) feedbackModal.style.display = 'none';
     });
 
-    // Resize Handler
     window.addEventListener('resize', () => {
         const activeBtn = document.querySelector('.nav-button.active');
         showPanel(activeBtn ? activeBtn.getAttribute('data-panel') : 'panel-tasks');
