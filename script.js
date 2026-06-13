@@ -20,12 +20,11 @@ let timerInterval;
 let currentSession = 1;
 
 // --- CONFIGURAÇÃO DO NOVO ALARME ---
-// Som de despertador clássico, bem alto e nítido
 const alarmSound = new Audio(
   "https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg",
 );
-alarmSound.volume = 1.0; // Garante que o volume do JS esteja em 100%
-let isAudioUnlocked = false; // Controle de bloqueio do navegador
+alarmSound.volume = 1.0;
+let isAudioUnlocked = false;
 
 let tasks = [];
 let exercises = [];
@@ -71,7 +70,6 @@ const projectIntro = document.querySelector(".project-intro");
 // 3. Funções do Pomodoro e Alarme
 // =======================================
 
-// Função para parar o alarme se o usuário interagir
 function stopAlarm() {
   alarmSound.pause();
   alarmSound.currentTime = 0;
@@ -95,22 +93,20 @@ function updateDisplay() {
 }
 
 function startTimer() {
-  // DESBLOQUEIO DE ÁUDIO (Hack para navegadores)
-  // Toca o áudio mutado no primeiro clique do usuário para o navegador dar permissão
   if (!isAudioUnlocked) {
-    alarmSound.volume = 0; // Muta
+    alarmSound.volume = 0;
     alarmSound
       .play()
       .then(() => {
         alarmSound.pause();
         alarmSound.currentTime = 0;
-        alarmSound.volume = 1.0; // Retorna pro máximo para quando precisar tocar de verdade
+        alarmSound.volume = 1.0;
       })
-      .catch((e) => console.log("Desbloqueio de áudio pendente."));
+      .catch((e) => console.log("Desbloqueio pendente."));
     isAudioUnlocked = true;
   }
 
-  stopAlarm(); // Para o alarme se ele estiver tocando da sessão anterior
+  stopAlarm();
 
   if (isRunning) return;
   isRunning = true;
@@ -137,7 +133,7 @@ function pauseTimer() {
 }
 
 function resetTimer() {
-  stopAlarm(); // Para o alarme ao reiniciar
+  stopAlarm();
   pauseTimer();
   mode = "focus";
   currentSession = 1;
@@ -148,16 +144,7 @@ function resetTimer() {
 }
 
 function handleTimerEnd() {
-  // Toca o Alarme alto
-  alarmSound
-    .play()
-    .catch((e) =>
-      console.log(
-        "Áudio bloqueado pelo navegador. O usuário precisa interagir com a página antes.",
-      ),
-    );
-
-  // Efeito de piscar na tela
+  alarmSound.play().catch((e) => console.log("Áudio bloqueado."));
   timerDisplay.classList.add("timer-alarm");
 
   if (mode === "focus") {
@@ -211,27 +198,25 @@ function saveConfig() {
     config.focusTime = f;
     config.shortBreak = s;
     config.longBreak = l;
-
     if (getCookie(COOKIE_CONSENT) === "true") {
       setCookie(CONFIG_COOKIE, JSON.stringify(config), 365);
     }
-
     resetTimer();
     configModalOverlay.style.display = "none";
   } else {
-    alert("Por favor, insira valores válidos (maiores que 0).");
+    alert("Valores inválidos (maiores que 0).");
   }
 }
 
 // =======================================
-// 5. Tarefas (Funções Globais para o HTML)
+// 5. Tarefas (Funções Globais)
 // =======================================
 
 window.addTask = function () {
   const text = newTaskText.value.trim();
   if (text === "") return;
   if (getCookie(COOKIE_CONSENT) !== "true") {
-    alert("Aceite os cookies para salvar.");
+    alert("Aceite os cookies.");
     return;
   }
 
@@ -289,12 +274,11 @@ function renderTasks() {
 
   taskPanelTitle.textContent = canHaveSubtasks
     ? "Lista de Tarefas"
-    : "Tarefas Unicas";
+    : "Atividades Únicas";
 
   list.forEach((masterTask, index) => {
     const masterLi = document.createElement("li");
     masterLi.className = `task-item master-task ${masterTask.status}`;
-
     const displaySubBtn = canHaveSubtasks ? "inline-block" : "none";
 
     masterLi.innerHTML = `
@@ -340,7 +324,6 @@ function renderTasks() {
       });
       masterLi.appendChild(subUl);
     }
-
     taskList.appendChild(masterLi);
   });
   saveTasks();
@@ -363,10 +346,6 @@ function loadTasks() {
   }
   renderTasks();
 }
-
-// =======================================
-// 6. Cookies e Tema
-// =======================================
 
 function setCookie(name, value, days) {
   let expires = "";
@@ -407,7 +386,6 @@ function loadTheme() {
 
 function toggleTheme() {
   const isCurrentlyDark = document.body.classList.contains("dark");
-
   if (isCurrentlyDark) {
     document.body.classList.replace("dark", "light");
     if (getCookie(COOKIE_CONSENT) === "true")
@@ -418,10 +396,6 @@ function toggleTheme() {
       setCookie(THEME_COOKIE, "dark", 365);
   }
 }
-
-// =======================================
-// 7. Mobile Nav & Init
-// =======================================
 
 function setupMobileNavigation() {
   showPanel("panel-tasks");
@@ -473,7 +447,7 @@ function handleCookieConsent() {
 }
 
 // =======================================
-// INICIALIZAÇÃO
+// 6. Inicialização (Eventos)
 // =======================================
 window.onload = () => {
   handleCookieConsent();
@@ -483,12 +457,10 @@ window.onload = () => {
   updateTimerMode();
   setupMobileNavigation();
 
-  // Eventos do Timer
   startButton.addEventListener("click", startTimer);
   pauseButton.addEventListener("click", pauseTimer);
   resetButton.addEventListener("click", resetTimer);
 
-  // Eventos de Configuração
   configButton.addEventListener("click", openConfigModal);
   cancelConfigButton.addEventListener(
     "click",
@@ -496,10 +468,10 @@ window.onload = () => {
   );
   saveConfigButton.addEventListener("click", saveConfig);
 
-  // Eventos do Feedback
   if (feedbackTrigger) {
     feedbackTrigger.addEventListener("click", () => {
-      if (feedbackText) feedbackText.value = "";
+      const area = document.getElementById("feedback-text");
+      if (area) area.value = "";
       feedbackModal.style.display = "flex";
     });
   }
@@ -510,7 +482,6 @@ window.onload = () => {
     );
   }
 
-  // Tarefas e Tema
   newTaskText.addEventListener("keypress", (e) => {
     if (e.key === "Enter") addTask();
   });
@@ -522,6 +493,7 @@ window.onload = () => {
     activeList = "exercises";
     renderTasks();
   });
+
   themeSwitch.addEventListener("change", toggleTheme);
 
   cookieAcceptButton.addEventListener("click", () => {
@@ -530,7 +502,6 @@ window.onload = () => {
     loadTasks();
   });
 
-  // Fechar modais ao clicar fora
   window.addEventListener("click", (e) => {
     if (e.target === configModalOverlay)
       configModalOverlay.style.display = "none";
@@ -541,4 +512,31 @@ window.onload = () => {
     const activeBtn = document.querySelector(".nav-button.active");
     showPanel(activeBtn ? activeBtn.getAttribute("data-panel") : "panel-tasks");
   });
+  // =======================================
+  // PLAYER DE LOFI CUSTOMIZADO
+  // =======================================
+  const lofiAudio = document.getElementById("lofi-audio-stream");
+  const lofiPlayBtn = document.getElementById("lofi-play-pause");
+  const lofiVolume = document.getElementById("lofi-volume");
+
+  if (lofiAudio && lofiPlayBtn) {
+    // Controle de Volume Inicial
+    lofiAudio.volume = lofiVolume.value;
+
+    // Play / Pause
+    lofiPlayBtn.addEventListener("click", () => {
+      if (lofiAudio.paused) {
+        lofiAudio.play();
+        lofiPlayBtn.textContent = "⏸"; // Muda pro ícone de pause
+      } else {
+        lofiAudio.pause();
+        lofiPlayBtn.textContent = "▶"; // Muda pro ícone de play
+      }
+    });
+
+    // Controle de Volume
+    lofiVolume.addEventListener("input", (e) => {
+      lofiAudio.volume = e.target.value;
+    });
+  }
 };
