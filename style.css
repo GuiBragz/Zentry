@@ -941,3 +941,42 @@ textarea:focus {
     transform: translateY(0);
   }
 }
+.footer-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  font-size: 0.8em;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.version {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* Ajuste fino nos links do footer */
+.zentry-footer a.portfolio-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+.zentry-footer a.portfolio-link:hover {
+  text-decoration: underline;
+}
